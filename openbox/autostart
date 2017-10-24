@@ -1,0 +1,54 @@
+#
+# These things are run when an Openbox X Session is started.
+# You may place a similar script in $HOME/.config/openbox/autostart
+# to run user-specific things.
+#
+
+# If you want to use GNOME config tools...
+#
+#if test -x /usr/lib/openbox/gnome-settings-daemon >/dev/null; then
+#  /usr/lib/openbox/gnome-settings-daemon &
+#elif which gnome-settings-daemon >/dev/null 2>&1; then
+#  gnome-settings-daemon &
+#fi
+
+# If you want to use XFCE config tools...
+#
+#xfce-mcs-manager &
+
+ /usr/lib/mate-polkit/polkit-mate-authentication-agent-1 &
+
+################# KEYMAP ####################
+ setxkbmap -option grp:alt_shift_toggle fr,ar &
+
+################# Touch Pad ####################
+ synclient TapButton1=1 TapButton2=3 TapButton3=2  &
+
+################# COMPOSITING ###############
+ compton &
+#xcompmgr -c   &
+
+################# WALLpaper #################
+ nitrogen --restore &
+
+################# PANELS ####################
+ tint2 &
+ plank &
+
+################# SYS TRAY ##################
+ pamac-tray &
+ nm-applet &
+ #mate-volume-control-applet &
+
+################# Screensaver ##################
+xscreensaver -no-splash &
+
+####################  Conky #################
+#sh "/home/yahia/.config/openbox/conky-startup.sh" &
+ sleep 5s
+ #killall conky &
+ cd "/home/yahia/.conky/myConky" &
+ conky -c "/home/yahia/.conky/myConky/conky-info-rc" &
+ sleep 5s
+ conky -c "/home/yahia/.conky/myConky/conkyrc" &
+
