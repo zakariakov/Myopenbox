@@ -1,0 +1,218 @@
+# Conky settings #
+background no
+update_interval 5
+
+cpu_avg_samples 2
+net_avg_samples 2
+
+override_utf8_locale yes
+
+double_buffer yes
+no_buffers yes
+
+text_buffer_size 2048
+#imlib_cache_size 0
+
+temperature_unit celsius
+
+#--------------------------------------
+# - Window specifications -
+#--------------------------------------
+own_window yes
+own_window_type normal
+own_window_transparent no
+own_window_hints undecorated,below,skip_taskbar,skip_pager,sticky
+#own_window_colour gray
+own_window_class Conky
+own_window_title Chronograph
+own_window_argb_value 0
+own_window_argb_visual yes
+own_window_colour 000000
+
+border_inner_margin 10
+border_outer_margin 1
+
+alignment top_left
+
+# Graphics settings #
+draw_shades no
+draw_outline no
+draw_borders no
+draw_graph_borders yes
+
+# Text settings #
+use_xft yes
+override_utf8_locale yes
+
+xftfont Ubuntu:normal:size=8
+xftalpha 1.0
+uppercase no
+
+minimum_size 250 768
+maximum_width 250
+gap_x 0
+gap_y 0
+
+
+imlib_cache_size 0
+
+
+#-------------------------------------
+#--  Colors
+#-------------------------------------
+default_outline_color  000000 
+default_color 1E2649
+# title color
+color0 90EE90
+# normal color
+color1 ffffff
+# bar graph color
+color2 2B6F4A
+# line color
+color3 1E2649 
+
+#-------------------------------------
+#--  Icon Sources
+#-------------------------------------
+template0 "./weather-icons/64px-green"
+
+#-------------------------------------
+#--  API Key 
+#--  To get API Key, first you have to sign up here https://openweathermap.org/appid
+#-------------------------------------
+template6 "f042f7478e95fc946e760486707df45f"
+
+
+#-------------------------------------
+#--  City ID
+#--  Find your City ID here http://openweathermap.org/help/city_list.txt
+#-------------------------------------
+template7 "2507480"
+
+
+#-------------------------------------
+#--  Temp Unit (default, metric, imperial)
+#-------------------------------------
+template8 "metric"
+
+
+#-------------------------------------
+#--  Locale (e.g. "es_ES.UTF-8")
+#--  Leave empty for default
+#-------------------------------------
+template9 "fr_FR.UTF-8"
+
+
+TEXT
+${font FontAwesome:normal:size=14}${color1}  ${font Neuropolitical:italic:size=8}${sysname} ${Kernel} ${machine}
+${color3}${hr}
+## TIME ============================================
+${font Neuropolitical:size=24}${goto 50}${color 169C86}${alignc}${time %H} : ${time  %M}${font}
+\
+## DATE  ============================================
+${font Neuropolitical:size=9}${goto 50}${color1}${alignc}${time  %d/%m/%Y} 
+${color3}${hr}
+## Weather ==========================================from archlabs
+# Here is code I have taken from Jelly Conky from zagortenay333
+#${image ~/.path-to-image -p 0,0 -s 200x700}
+${execi 300 l=${template9}; l=${l%%_*}; curl -s "api.openweathermap.org/data/2.5/forecast/daily?APPID=${template6}&id=${template7}&cnt=5&units=${template8}&lang=$l" -o ~/.cache/forecast.json}\
+${execi 300 l=${template9}; l=${l%%_*}; curl -s "api.openweathermap.org/data/2.5/weather?APPID=${template6}&id=${template7}&cnt=5&units=${template8}&lang=$l" -o ~/.cache/weather.json}\
+\
+${font Neuropolitical :size=14}${color1}\
+${voffset 5}\
+$alignr${execi 300 jq ".main.temp" ~/.cache/weather.json | awk '{print int($1+0.5)}' # round num}°${font}${color}
+#
+${font Ubuntu :size=10}\
+$alignr${color1}${execi 300 jq ".list[0].temp.min" ~/.cache/forecast.json | awk '{print int($1+0.5)}' # round num}° ${color3}| \
+${color1}${execi 300 jq ".list[0].temp.max" ~/.cache/forecast.json | awk '{print int($1+0.5)}' # round num}°${font}${color}
+\
+${execi 300 cp -f ${template0}/$(jq .weather[0].id ~/.cache/weather.json).png ~/.cache/current.png}${image ~/.cache/current.png -p 0,95 -s 64x64}
+\
+${font Neuropolitical :size=12}${color0}\
+${execi 300 jq -r ".name" ~/.cache/weather.json}${color}\
+${font Ubuntu :size=10}${alignr }${color1}\
+${execi 300 jq -r ".weather[0].description" ~/.cache/weather.json}${font}${color}
+# Here is end of code I have taken from Jelly Conky from zagortenay333
+\
+${color3}${hr}
+## UPTIME ============================================
+${font FontAwesome:normal:size=12}${color1} ${goto 40}${font Neuropolitical:size=8}${color0}Uptime: ${color1}${alignr}${uptime_short}
+## BATERY ============================================
+${voffset 5}${font FontAwesome:normal:size=12}${color1}\
+${if_match ${battery_percent BAT1} < 15}${color red}\
+${else}${if_match ${battery_percent BAT1} < 30}${color FF9E00}\
+${else}${if_match ${battery_percent BAT1} < 60}${color1}\
+${else}${if_match ${battery_percent BAT1} < 90}${color1}\
+${else}${color1}${endif}${endif}${endif}${endif}\
+${goto 40}${font Neuropolitical:size=8}${color0}Battery ${color1}${alignr}${battery BAT1}
+#
+#${goto 40}${color2}${if_match ${battery_percent BAT1} < 30}${color red}${endif}${battery_bar BAT1}
+
+## EDITION CPU ==============================================
+${font FontAwesome:normal:size=12}${color1}  ${font Neuropolitical:size=9}${color0}CPU :${color3}${hr}
+#
+${voffset 5}${goto 40}${font Ubuntu:normal:size=9}${color0}Feq : ${color1}${freq_g cpu}Ghz \
+${color1}${alignr}${if_match ${acpitemp} > 65}${color red}${endif}${font FontAwesome:normal:size=12}  ${font Neuropolitical:size=8}${acpitemp}°
+#${goto 40}${color2}${cpugraph 20,220 FFD083 FF0000  -t}${font}
+#
+${goto 40}${font Ubuntu:normal:size=8}${color0}CPU1: ${cpu cpu0}% \
+${color2}${if_match ${cpu cpu0} > 65} ${color red}${endif} ${alignr }${cpubar cpu0 5,150}
+${goto 40}${font Ubuntu:normal:size=8}${color0}CPU2: ${cpu cpu1}% \
+${color2}${if_match ${cpu cpu1} > 65} ${color red} ${endif} ${alignr }${cpubar cpu1 5,150}
+${goto 40}${font Ubuntu:normal:size=8}${color0}CPU3: ${cpu cpu2}% \
+${color2}${if_match ${cpu cpu2} > 65} ${color red} ${endif} ${alignr }${cpubar cpu2 5,150}
+${goto 40}${font Ubuntu:normal:size=8}${color0}CPU4: ${cpu cpu3}% \
+${color2}${if_match ${cpu cpu3} > 65} ${color red} ${endif} ${alignr }${cpubar cpu3 5,150}
+#${font Ubuntu:normal:size=8}${voffset 0}${goto 5}${color1}CPU1:${cpu cpu0}%  CPU2:${cpu cpu1}%  CPU3:${cpu cpu2}%   CPU4:${cpu cpu3}% 
+
+## EDITION MEMORY==============================================
+${font FontAwesome:normal:size=12}${color1}  ${font Neuropolitical:size=8}${color0}MEMORY :${color3}${hr}
+#
+${goto 40}${font Ubuntu:normal:size=8}${color0}RAM : ${color1}${memperc}% ${alignr}${mem} / ${color1}${memmax}
+${goto 40}${color2}${if_match ${memperc} > 75}${color red}${endif}$membar
+#
+${goto 40}${font Ubuntu:normal:size=8}${color0}SWAP : ${color1}${swapperc}% ${alignr 5}${swap} / ${color1}${swapmax}
+${goto 40}${color2}${if_match ${swapperc} > 75}${color red}${endif}$swapbar
+
+## EDITION DISK=============================================
+${font FontAwesome:normal:size=12}${color1} ${font Neuropolitical:size=8}${color0}HARD  DRIVE :${color3}${hr}
+# root
+${goto 40}${font Ubuntu:normal:size=8}${color0}${voffset 0}ROOT: ${color1}${fs_used_perc  /}%${alignr}${fs_used /} / ${fs_size /}
+${goto 40}${color2}${fs_bar /}
+# data
+${goto 40}${font Ubuntu:normal:size=8}${color0}${voffset 2}DTA: ${color1}${fs_used_perc  /media/Data}%${alignr}${fs_used /media/Data} / ${fs_size /media/Data}
+${goto 40}${color2}${fs_bar /media/Data}
+# read
+${goto 40}${voffset 4}${color0}READ: ${alignr}${color2}${diskiograph_read 12,150  FFD083 FF0000  -t}
+# write
+${goto 40}${voffset 4}${color0}WRITE: ${alignr}${color2}${diskiograph_write 12,150  FFD083 FF0000  -t}
+
+## TOP CPU MEM ==========================================================
+${font FontAwesome:normal:size=12}${color1} ${font Neuropolitical:size=8}${color0}TOP :${color3}${hr}
+## TOP CPU ============================================
+${goto 40}${font Neuropolitical:size=8}${color0}${voffset 4}CPU :
+${goto 40}${voffset 0}${font Ubuntu:normal:size=8}${color1}${top name 1}${alignr 5}${top cpu 1}%
+${goto 40}${voffset 2}${font Ubuntu:normal:size=8}${color1}${top name 2}${alignr 5}${top cpu 2}%
+${goto 40}${voffset 2}${font Ubuntu:normal:size=8}${color1}${top name 3}${alignr 5}${top cpu 3}%
+## TOP MEM ============================================
+${goto 40}${font Neuropolitical:size=8}${color0}${voffset 4}MEM :
+${goto 40}${voffset 0}${font Ubuntu:normal:size=8}${color1}${top_mem name 1}${alignr 5}${top_mem mem 1}%
+${goto 40}${voffset 2}${font Ubuntu:normal:size=8}${color1}${top_mem name 2}${alignr 5}${top_mem mem 2}%
+${goto 40}${voffset 2}${font Ubuntu:normal:size=8}${color1}${top_mem name 3}${alignr 5}${top_mem mem 3}%
+${color3}${hr}
+## Audacious ============================================
+${if_running audacious}\
+${font FontAwesome:normal:size=12}${color1} ${goto 40}${font Ubuntu:normal:size=8}audacious :\
+${exec audtool  --playback-status}\
+${alignr 5}${exec audtool --current-song-output-length} / ${exec audtool --current-song-length}${endif}
+##
+#${if_running clementine}\
+#${font FontAwesome:normal:size=12}${color1} ${goto 40}${font Ubuntu:normal:size=8}clementine : \
+#${alignr 5}${execi 5 python2 ./anowplaying.py -e}  /  ${execi 5 python2 ./anowplaying.py -m}${endif}
+##
+## Here is code I have taken from Workspace Indicator by from aresgon
+#${goto 100}${font Droid Sans :size=25}${if_match ${desktop}==1}${color0}${endif}•${color1}${offset 10}${if_match ${desktop}==2}${color0}${endif}•${color1}${offset 10}${if_match ${desktop}==3}${color0}${endif}•${color1}${offset 10}${if_match ${desktop}==4}${color0}${endif}•${color1}${font}
+## Here is end of code I have taken from Workspace Indicator by from aresgon
+#${hr}
+#${execi 6000 lsb_release -d | grep 'Descr'|awk {'print $2 " " $3" " $4" " $5'}}${alignr}${execi 6000 lsb_release -a | grep 'Release'|awk {'print $2""$3""$4""$5'}}${color}
+
